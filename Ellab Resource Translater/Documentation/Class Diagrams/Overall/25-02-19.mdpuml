@@ -1,0 +1,213 @@
+﻿@startuml
+hide empty fields
+skinparam wrapWidth 500
+
+
+class CancellationTokenSource <<InBuilt>>
+class DbConnection <<InBuilt>>
+
+namespace EllabResourceTranslater #BBFFBB {
+	class Program {
+		+{static} void main()
+	}
+
+
+	class Forms.MainForm <<Form>>{
+		+Task TryConnectDB()
+		+Task TryConnectAzure()
+		+void EMSuite_Init(TranslationService? translationService, CancellationTokenSource source)
+		+void ValSuite_Init(TranslationService? translationService, CancellationTokenSource source)
+	}
+
+	class Util.TranslationService {
+		+AzureKeyCredential creds
+		+Uri uri
+		+string region
+		+async Task<bool> CanReachAzure()
+		+async Task<List<(string source, string[] translation)>> TranslateTextAsync(string[] texts, string targetLanguage)
+	}
+
+
+
+	class Util.ConnectionProvider {
+		-List<DBConnection> dces
+		+DbConnection Get()
+		+void Dispose()
+	}
+
+
+	class Translators.EMSuite {
+		+void Run(string rootPath, ListView progressView, Label progressTitle)
+	}
+
+	class Translators.ValSuite {
+		+void Run(string rootPath, ListView progressView, Label progressTitle)
+	}
+
+	class Translators.DBProcessorBase {
+		+DatabaseTransactionHandler? dth;
+		+void Run(string path, ListView view, Label progresText, Regex regex)
+	}
+
+	class Util.DatabaseTransactionHandler {
+		+void AddInsert(DataTable dt)
+		+void StartCommands(ConnectionProvider connProv, Label progresText, ListView listView, Func<DataTable, string> getResourceName, bool waitTillStopped = false)
+		+bool NoMoreInserts()
+	}
+
+	class Util.FormUtils <<(S, #FF7700)>> {
+		.. settings related ..
+		+{static} void SaveCheckBoxListLocalised(List<string> list, CheckedListBox checkedListBox, Dictionary<string, string> localiser)
+		+{static} void LoadCheckBoxListLocalised(List<string> list, CheckedListBox checkedListBox, Dictionary<string, string> localiser)
+		.. show progress ..
+		+{static} void ShowOnListWhileProcessing(Action update, ListView listView, string resourceName, Action process)
+		+{static} void ShowOnListWhileProcessing(int pathLength, Action update, ListView listView, string resourceName, Action process)
+		+{static} void ShowOnListWhileProcessing(Func<string, string> getResource, Action update, ListView listView, string resourceName, Action process)
+		+{static} TResult ShowOnListWhileProcessing<TResult>(int pathLength, Action update, ListView listView, string resourceName, Func<ListViewItem, TResult> process)
+		+{static} TResult ShowOnListWhileProcessing<TResult>(Func<string, string> getResource, Action update, ListView listView, string resourceName, Func<ListViewItem, TResult> process)
+		.. Thread-Safe Label Updater ..
+		+{static} void LabelTextUpdater(Label label, params object[] texts)
+	}
+
+	class Util.ExecutionHandler <<(S, #FF7700)>>{
+		+{static} void TryExecute<T>(int threads, Action<int> action, Action<T> onFailing, CancellationToken token) where T : Exception
+		+{static} void TryExecute<T>(int threads, int predictedProcesses, Action<int> action, Action<T> onFailing, CancellationToken token) where T : Exception
+		+{static} void TryExecute<T>(int threads, Action<int> action, Action<T> onFailing) where T : Exception
+		+{static} void TryExecute<T>(int threads, int predictedProcesses, Action<int> action, Action<T> onFailing) where T : Exception
+		+{static} void Execute(int threads, Action<int> action)
+		+{static} void Execute(int threads, int predictedProcesses, Action<int> action)
+	}
+
+	interface Interfaces.IDBparameterable { 
+		DbParameter CreateParameter();
+		DbParameterCollection Parameters { get; }
+	}
+
+	class Objects.Extensions.IDBparameterableExt {
+		.. Extension Method for IDBparameterable ..
+		+void AddParam(this IDBparameterable c, DataRow row, string name, DbType dbType)
+	}
+
+	class Objects.Extensions.DbConnectionExtender <<(S, #FF7700)>> {
+		.. Extension Method for DbConnection ..
+		+{static} bool CanMultiResult(this DbConnection conn)
+		+{static} async Task ThreadSafeAsyncFunction(this DbConnection conn, Action<DbConnection> query)
+		+{static} void WaitForOpen(this DbConnection conn)
+		+{static} void WaitForOpen(this DbConnection conn, Action ConnectionBroke)
+		+{static} void WaitForFinish(this DbConnection conn)
+		+{static} void TryClose(this DbConnection conn)
+	}
+
+	class Util.DBStringHandler <<(S, #FF7700)>> {
+		+{static} DbConnection CreateDbConnection(string connectionString)
+		+{static} ConnType DetectType(string connectionString)
+		+{static} string JsonExtractIfNeeded(string connectionString)
+	}
+
+	enum Enums.ConnType {
+	
+	}
+	class Enums.Extensions.ConnTypeExt <<(S, #FF7700)>> {
+		bool HasAny(this ConnType tct, ConnType ct)
+		bool HasAll(this ConnType tct, ConnType ct)
+	}
+
+	class Objects.Ref<T> {
+		+T value = value;
+		+{static} implicit operator T(Ref<T> valRef)
+		+{static} implicit operator Ref<T>(T val)
+	}
+
+	class Util.ResourceHandler <<(S, #FF7700)>> {
+		+{static} Dictionary<string, MetaData<Type>> ReadResource<Type>(string path)
+		+{static} void WriteResource(string path, Dictionary<string, MetaData<object?>> data)
+		+{static} Dictionary<string, Dictionary<string, MetaData<object?>>> GetAllLangResources(HashSet<string> existing, string resource, string[] langs, IEnumerable<string> langsToAi)
+		+{static} Dictionary<string, Dictionary<string, MetaData<object?>>> GetAllLangResources(HashSet<string> existing, string resource, string[] langs, IEnumerable<string> langsToAi, TranslationService? translationService)
+		+{static} void TranslateMissingValuesToLang(Dictionary<string, Dictionary<string, MetaData<object?>>> translations, string lang, TranslationService? TranslationService)
+	}
+
+	class Objects.MetaData<Type> {
+		+string key = key;
+		+Type value = value;
+		+string comment = comment;
+	}
+
+	class Objects.Extensions.MetaDataExt {
+		+{static} ResXDataNode? ToResXDataNode(this MetaData<object?> meta)
+		+{static} void WriteToResourceWriter(this MetaData<object?> meta, ResXResourceWriter writer)
+	}
+
+
+	'Relations
+
+	namespace Translators #CCCCFF {
+		'inbound
+		.EllabResourceTranslater.Forms.MainForm --> ValSuite : click
+		.EllabResourceTranslater.Forms.MainForm --> EMSuite : click
+
+		'internal
+		ValSuite --|> DBProcessorBase
+		EMSuite --|> DBProcessorBase
+
+		'outbound
+		DBProcessorBase ->.EllabResourceTranslater.Objects.Ref
+		DBProcessorBase o--- .EllabResourceTranslater.Util.DatabaseTransactionHandler
+	}
+
+	namespace Forms #CCCCFF {
+		'inbound
+		.EllabResourceTranslater.Program --> MainForm
+
+		'outbound
+		.CancellationTokenSource -o MainForm
+	}
+	namespace Util #CCCCFF {
+		'inbound
+		.EllabResourceTranslater.Forms.MainForm "0..1" o-- TranslationService
+		.EllabResourceTranslater.Forms.MainForm "0..1" o-- ConnectionProvider
+		Translators.DBProcessorBase --> ResourceHandler
+
+		'internal
+		DatabaseTransactionHandler -> DBStringHandler
+		DatabaseTransactionHandler --> FormUtils
+		DatabaseTransactionHandler --> ExecutionHandler
+		DatabaseTransactionHandler *-- ConnectionProvider
+
+		'outbound
+		ResourceHandler ---> .EllabResourceTranslater.Objects.MetaData
+		DBStringHandler -> .EllabResourceTranslater.Enums.ConnType
+		DatabaseTransactionHandler --up-> .EllabResourceTranslater.Objects.Extensions.DbConnectionExtender
+		.EllabResourceTranslater.DbConnection -o "*" ConnectionProvider
+	}
+	namespace Objects #CCCCFF {
+		namespace Extensions #EEEEAA {
+			'Helper Class
+			.EllabResourceTranslater.Interfaces.IDBparameterable - IDBparameterableExt
+			.EllabResourceTranslater.Objects.MetaData -> MetaDataExt
+		}
+		'inbound
+		DBCommandWrapper <-- .EllabResourceTranslater.Util.DatabaseTransactionHandler
+		DBBatchCommandWrapper <-- .EllabResourceTranslater.Util.DatabaseTransactionHandler
+
+		'outbound
+		.EllabResourceTranslater.Interfaces.IDBparameterable <|-- DBCommandWrapper
+		.EllabResourceTranslater.Interfaces.IDBparameterable <|-- DBBatchCommandWrapper
+	}
+	namespace Interfaces #CCCCFF{
+	}
+	namespace Enums #CCCCFF{
+		namespace Extensions #EEEEAA {
+			'Helper class
+			ConnTypeExt -up- .EllabResourceTranslater.Enums.ConnType
+		}
+	}
+}
+
+
+
+
+
+remove <<InBuilt>>
+hide <<InBuilt>> members
+hide <<InBuilt>> Circle
+@enduml

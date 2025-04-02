@@ -1,0 +1,29 @@
+﻿@startuml
+title Translate Process
+
+[*] --> Find_Files
+Find_Files --> Filter_English
+Filter_English --> Iterate_Files
+
+state Iterate_Files {
+  [*] --> Read_English_File
+  Read_English_File --> Iterate_Languages
+
+  state Iterate_Languages {
+    [*] --> Check_Translation_File
+    Check_Translation_File --> Read_Translation : Exists
+    Read_Translation --> Check_Translation
+
+    Check_Translation_File --> Translate : Doesn't Exist & AI Allowed
+    Check_Translation --> Translate : Not Translated & AI Allowed
+    Check_Translation --> Upload : Translated
+
+    Translate --> Upload
+  }
+
+  Upload --> [*]
+}
+
+Iterate_Files --> [*]
+
+@enduml

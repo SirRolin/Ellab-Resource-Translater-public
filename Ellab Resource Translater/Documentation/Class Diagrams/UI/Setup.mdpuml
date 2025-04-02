@@ -1,0 +1,57 @@
+@startuml
+hide empty fields
+skinparam wrapWidth 500
+
+namespace EllabResourceTranslater #BBFFBB {
+	class Program {
+		+{static} void Main()
+	}
+	namespace Forms #CCCCFF {
+		Program --> MainForm
+		class MainForm <<Form>>{
+			+Task TryConnectDB()
+			+Task TryConnectAzure()
+			+void ValSuite_Init(TranslationService? transServ, CancellationTokenSource source)
+			+void EMSuite_Init(TranslationService? transServ, CancellationTokenSource source)
+		}
+		MainForm -down-> Settings
+		class Settings <<Form>> {
+			
+		}
+		Settings ---> .EllabResourceTranslater.Util.Config
+		MainForm -right-> AzureForm
+		class AzureForm <<Form>>{
+
+		}
+		AzureForm ---> .EllabResourceTranslater.Util.SecretManager
+		AzureForm ---> .EllabResourceTranslater.Util.Config
+		MainForm --> DatabaseSelecterForm
+		class DatabaseSelecterForm <<Form>>{
+			
+		}
+		DatabaseSelecterForm ---> .EllabResourceTranslater.Util.SecretManager
+		DatabaseSelecterForm ---> .EllabResourceTranslater.Util.Config
+	}
+	namespace Util #CCCCFF {
+		class SecretManager {
+			+{static} void SetUserSecret(string key, string value)
+			+{static} string? GetUserSecret(string key)
+			+{static} void DeleteUserSecret(string key)
+		}
+		class Config {
+			+{static} Dictionary<string, string> DefaultLanguages() => defaultLanguages;
+			+{static} string EMPath
+			+{static} string ValPath
+			+{static} List<string> languagesToTranslate
+			+{static} List<string> languagesToAiTranslate
+			+{static} int threadsToUse
+			+{static} int insertersToUse
+			+{static} Size MainWindowSize
+			+{static} Size SettingWindowSize
+			+{static} bool closeOnceDone
+		}
+
+	}
+}
+
+@enduml

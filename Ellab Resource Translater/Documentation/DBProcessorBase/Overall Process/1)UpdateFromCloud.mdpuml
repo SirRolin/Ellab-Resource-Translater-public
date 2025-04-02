@@ -1,0 +1,90 @@
+﻿@startuml
+title Translation Process
+
+start
+
+:start transaction;
+
+group Transaction
+
+group Update local #lightgreen
+
+:Connect to DB; <<task>>
+
+:Fetch changed translations;
+
+:Group changes by file;
+
+group <color:purple> possibly multi-thread
+
+repeat :iterate on file;
+
+	:read associated file; <<load>>
+
+	:replace with changes;
+
+	:save file; <<save>>
+
+repeat while
+
+end group
+
+:Disconnect from DB; <<task>>
+
+end group
+
+group Translate #lightblue
+
+:Find Resource files in all subfolders; <<procedure>>
+
+:Copy & Filter to english files;
+
+:Connect to DB; <<task>>
+
+group <color:purple> possibly multi-thread
+
+repeat :iterate files;
+	repeat :iterate on **language**;
+		:read english; <<load>>
+		if (**language** file exists) then (true)
+			:read **language**; <<load>>
+		else (false)
+			:create empty;
+		endif
+		:add missing fields from english;
+		if (AI Allowed?) then (true)
+			:translate;
+		else (false)
+			:add english field;
+		endif
+		:save file; <<save>>
+		:save to upload queue; <<input>>
+	repeat while
+repeat while
+
+end group
+
+:connect to DB; <<task>>
+
+group <color:purple> possibly multi-thread
+
+repeat :iterate upload queue;
+	:upload; <<output>>
+repeat while
+
+end group
+
+
+end group
+
+if(Cancelled) then (no)
+	:commit transaciton;
+endif
+
+:Disconnect from DB; <<task>>
+
+end group
+
+end
+
+@enduml

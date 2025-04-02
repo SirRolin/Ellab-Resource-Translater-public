@@ -1,0 +1,32 @@
+﻿@startuml
+
+start
+
+if(maxThreads) then (>0)
+
+:Define TaskArray;
+
+while (all threads started?) is (no)
+:Run new Task;
+if() then
+	:run process;
+	-[hidden]->
+	detach
+	note: Async
+else
+endif
+	backward :Add To TaskArray;
+endwhile (yes)
+
+:WaitForAllTasksToFinish;
+
+else
+
+:run process;
+
+endif
+
+end
+
+
+@enduml

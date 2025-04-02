@@ -1,0 +1,36 @@
+﻿@startuml
+title UpdateFromCloud
+
+group Transaction
+
+start
+
+:Connect to DB; <<task>>
+
+:Fetch changed translations;
+
+:Group changes by file;
+
+group <color:purple> possibly multi-thread
+
+repeat :iterate on file;
+
+	:read associated file; <<load>>
+
+	:replace with changes;
+
+	:save file; <<save>>
+
+repeat while
+
+end group
+
+:Disconnect from DB; <<task>>
+
+end
+
+note: continues
+
+end group
+
+@enduml
