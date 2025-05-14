@@ -165,7 +165,7 @@ namespace EllabResourceTranslater #BBFFBB {
 		'inbound
 		.EllabResourceTranslater.Forms.MainForm "0..1" o-- TranslationService
 		.EllabResourceTranslater.Forms.MainForm "0..1" o-- ConnectionProvider
-		Translators.DBProcessorBase --> ResourceHandler
+		.EllabResourceTranslater.Translators.DBProcessorBase --> ResourceHandler
 
 		'internal
 		DatabaseTransactionHandler -> DBStringHandler

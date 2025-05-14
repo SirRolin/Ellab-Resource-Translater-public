@@ -19,7 +19,8 @@ namespace Ellab_Resource_Translater.Objects
                             ListView view,
                             ConcurrentTable<C> cTable,
                             Action<string, Ref<int>, int> myUpdate,
-                            string title)
+                            string title,
+                            Func<string, string> langToLocal)
         {
             Ref<int> currentProgress = 0;
             int rowCount = cTable.dataRows.Count;
@@ -34,7 +35,7 @@ namespace Ellab_Resource_Translater.Objects
                             onStart: () => myUpdate(title, currentProgress, rowCount),
                             listView: view,
                             processName: threadNum + ") Fetching Data...",
-                            process: () => C.Register(Dict, rowData, cTable.dataColumns));
+                            process: () => C.Register(Dict, rowData, cTable.dataColumns, langToLocal));
                     }
                 });
         }

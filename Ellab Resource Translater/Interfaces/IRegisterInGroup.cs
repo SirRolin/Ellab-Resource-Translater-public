@@ -11,6 +11,6 @@ namespace Ellab_Resource_Translater.Interfaces
 {
     public interface IRegisterInGroup<T, C>
     {
-        public abstract static void Register(IDictionary<string, List<T>> Dict, TableCollectionRow tcr, ConcurrentDictionary<int, C> ctcs);
+        public abstract static void Register(ConcurrentDictionary<string, List<T>> Dict, TableCollectionRow tcr, ConcurrentDictionary<int, C> ctcs, Func<string, string> langToLocal);
     }
 }

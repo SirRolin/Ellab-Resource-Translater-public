@@ -194,7 +194,9 @@ namespace Ellab_Resource_Translater.Translators
                                                                                                  view,
                                                                                                  mergedTables,
                                                                                                  myUpdate,
-                                                                                                 "Grouping Data on same Resource Files: ");
+                                                                                                 "Grouping Data on same Resource Files: ",
+                                                                                                 langToLocal);
+
 
 
                     TruePathDict allResources = GetAllResourcePaths(path);
